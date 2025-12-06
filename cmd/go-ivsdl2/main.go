@@ -3,7 +3,20 @@ package main
 import (
 	"fmt"
 	"os"
+	"path/filepath"
+	"strings"
+
+	formats "github.com/aurelien-cuvelier/go-ivsdl2/internal/formats"
 )
+
+var extensionsIsSupported = map[string]bool{
+	"bpm": true,
+}
+var extensionsArr = make([]string, 0, len(extensionsIsSupported))
+
+var loaders = map[string]func(file *os.File) (formats.RawImage, error){
+	"bmp": formats.Process,
+}
 
 func main() {
 
@@ -23,4 +36,20 @@ func main() {
 	}
 	defer file.Close()
 
+	extension := filepath.Ext(imgPath)
+
+	populateExtensionArr()
+
+	if !extensionsIsSupported[extension] {
+		fmt.Printf("File format %s is not supported. Supported extensions: %s\n", extension, strings.Join(extensionsArr, ","))
+		return
+	}
+
+}
+
+func populateExtensionArr() {
+
+	for k := range extensionsIsSupported {
+		extensionsArr = append(extensionsArr, k)
+	}
 }
